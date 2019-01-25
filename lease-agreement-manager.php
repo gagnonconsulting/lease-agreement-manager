@@ -37,21 +37,11 @@ class LeaseAgreementPlugin
     add_action( 'init', array( $this, 'lease_agreements'));
   }
 
-  function activate() {
-    // run what needs to be run on activation
-    $this->lease_agreements();
-    // flush rewrite rules (Make wordpress away the database has changed and needs to be refreshed)
-    flush_rewrite_rules();
-  }
-
-  function deactivate() {
-    // flush rewrite rules
-    flush_rewrite_rules();
-  }
-
   function lease_agreements() {
     // Code to be run when LeaseAgreementPlugin is created
-    register_post_type( 'lease_agreement', ['public' => true, 'label' => 'Lease Agreements'] );
+    register_post_type( 'lease_agreement', ['public' => true,
+                                            'label' => 'Lease Agreements',
+                                            'menu_icon' => 'dashicons-id-alt'], 10 );
 
   }
 
@@ -69,6 +59,11 @@ class LeaseAgreementPlugin
 
   private function print_stuff() {
     echo 'Test.';
+  }
+
+  function activate() {
+    require_once plugin_dir_path( __FILE__ ) . 'includes/lease-agreement-plugin-activate.php';
+    LeaseAgreementManagerPluginActivate::activate();
   }
 }
 
@@ -98,10 +93,16 @@ $secondClass->register_post_type();
 //$secondClass->print_it_all();
 
 // activation
+
+// -- Call the activation function from within the initialized class LeaseAgreementPlugin
 register_activation_hook( __FILE__, array($leaseAgreementPlugin, 'activate'));
+// -- Call the activation function statically from /includes/lease-agreement-plugin-activate.php
+//register_activation_hook( __FILE__, array( 'LeaseAgreementManagerPluginActivate', 'activate'));
 
 // deactivation
-register_deactivation_hook( __FILE__, array($leaseAgreementPlugin, 'deactivate'));
+require_once plugin_dir_path( __FILE__ ) . 'includes/lease-agreement-plugin-deactivate.php';
+// register_deactivation_hook( __FILE__, array($leaseAgreementPlugin, 'deactivate'));
+register_deactivation_hook( __FILE__, array( 'LeaseAgreementManagerPluginDeactivate', 'deactivate'));
 
 // Include the includes file which has includes for all files in the plugin
 include ( plugin_dir_path( __FILE__ ) . 'includes.php');
