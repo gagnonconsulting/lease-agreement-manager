@@ -54,6 +54,24 @@ function manage_lease_agreement_columns($column_name, $id) {
       }
     }
   }
+  switch ($column_name) {
+   case 'status':
+   $end_date = get_post_meta( $id, '_lease_agreement_end_date_value_key', true );
+    if ( 'status' === $column_name ) {
+      $current_date = date("Y-m-d");
+      if ( $end_date ) {
+        if ( $end_date > $current_date ) {
+          echo '<span style="color: green">Active</span>';
+        }
+        elseif ( $end_date < $current_date ) {
+          echo '<span style="color: red">Expired</span>';
+        }
+      }
+        else {
+          _e( 'n/a' );
+        }
+    }
+  }
 }
 
 add_action( 'add_meta_boxes', 'lease_agreement_start_date_add_meta_box' );
@@ -140,4 +158,11 @@ function lease_agreement_save_end_date_data( $post_id ) {
 
   $my_data = $_POST['lease_agreement_end_date_field'];
   update_post_meta( $post_id, '_lease_agreement_end_date_value_key', $my_data );
+}
+
+add_action( 'plugins_loaded', 'remove_custom_user_contact_methods' );
+// Remove social inputs from users in the edit user
+function remove_custom_user_contact_methods()
+{
+  remove_filter( 'user_contactmethods', 'modify_contact_methods' );
 }
